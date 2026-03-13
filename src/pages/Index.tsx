@@ -1,14 +1,18 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { LocationTag } from "@/components/ui/location-tag";
 
-const Index = () => {
+export default function Index() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background p-8">
+      <div className="flex flex-col items-center gap-3">
+        <LocationTag />
+        <p className="text-sm text-muted-foreground">Hover to reveal</p>
       </div>
+
+      <hr className="w-24 border-border" />
+
+      <p className="text-sm text-muted-foreground">
+        A minimal location indicator with live time
+      </p>
     </div>
   );
-};
-
-export default Index;
+}
