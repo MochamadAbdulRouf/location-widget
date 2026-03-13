@@ -163,31 +163,40 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
         </div>
 
         {/* Location text */}
-        <div className="flex items-center gap-2 overflow-hidden">
+        <div className="relative flex items-center overflow-hidden" style={{ minHeight: '1.5rem' }}>
+          {/* Default state: city + weather emoji */}
           <span
-            className="text-sm font-medium text-foreground transition-all duration-500"
+            className="flex items-center gap-1.5 text-sm font-medium text-foreground transition-all duration-500 whitespace-nowrap"
             style={{
               transform: isHovered ? "translateY(-100%)" : "translateY(0)",
               opacity: isHovered ? 0 : 1,
             }}
           >
             {currentWeather && (
-              <span className="mr-1.5">{getWeatherEmoji(currentWeather.weatherCode)}</span>
+              <span>{getWeatherEmoji(currentWeather.weatherCode)}</span>
             )}
-            {location.city}, {location.country}
+            <span>{location.city}, {location.country}</span>
           </span>
+
+          {/* Hover state: time + detailed weather */}
           <span
-            className="absolute left-11 text-sm font-medium text-foreground transition-all duration-500"
+            className="absolute inset-x-0 flex items-center gap-2 text-sm font-medium text-foreground transition-all duration-500 whitespace-nowrap"
             style={{
               transform: isHovered ? "translateY(0)" : "translateY(100%)",
               opacity: isHovered ? 1 : 0,
             }}
           >
-            {currentTime} {location.timezone}
+            <span>{currentTime} {location.timezone}</span>
             {currentWeather && (
-              <span className="ml-2 text-xs text-muted-foreground">
-                {currentWeather.temperature}°C · 💧{currentWeather.humidity}% · 💨{currentWeather.windSpeed} km/h · {getWeatherLabel(currentWeather.weatherCode)}
-              </span>
+              <>
+                <span className="h-3 w-px bg-border" />
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span>{currentWeather.temperature}°C</span>
+                  <span>💧{currentWeather.humidity}%</span>
+                  <span>💨{currentWeather.windSpeed} km/h</span>
+                  <span>{getWeatherLabel(currentWeather.weatherCode)}</span>
+                </span>
+              </>
             )}
           </span>
         </div>
