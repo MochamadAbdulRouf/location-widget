@@ -14,6 +14,8 @@ interface Location {
 interface WeatherData {
   temperature: number
   weatherCode: number
+  humidity: number
+  windSpeed: number
 }
 
 const LOCATIONS: Location[] = [
