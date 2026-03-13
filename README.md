@@ -1,24 +1,4 @@
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+# How can I edit this code?
 
 Follow these steps:
 
@@ -36,20 +16,6 @@ npm i
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
 ## What technologies are used for this project?
 
 This project is built with:
@@ -60,14 +26,57 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
-## How can I deploy this project?
+# 🐳 Docker Multi-Stage Build
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+This project uses a **multi-stage Docker build** to produce a lean, secure, and optimized
+production image for a **React (Vite)** application.
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+## 📋 Overview
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+| Stage   | Name      | Base Image             | Purpose                           |
+| ------- | --------- | ---------------------- | --------------------------------- |
+| Stage 1 | `builder` | `node:${NODE_VERSION}` | Build & compile the React app     |
+| Stage 2 | `runner`  | `node:${NODE_VERSION}` | Serve the static production build |
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+---
+
+## 🔨 Stage 1 — Builder
+
+> Installs dependencies and compiles the React (Vite) app into optimized static files.
+
+| Instruction                              | Description                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| `FROM node:${NODE_VERSION} AS builder`   | Uses a lightweight Node.js 24 Alpine image as the build environment       |
+| `COPY package.json package-lock.json ./` | Copies dependency manifests first to leverage Docker layer caching        |
+| `RUN npm ci`                             | Installs dependencies cleanly and reproducibly based on the lockfile      |
+| `COPY . .`                               | Copies the full application source code into the container                |
+| `RUN npm run build`                      | Compiles the app into optimized static files inside the `dist/` directory |
+
+---
+
+## 🚀 Stage 2 — Runner
+
+> Serves the production build in a minimal and hardened runtime environment.
+
+| Instruction                                        | Description                                                                        |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `FROM node:${NODE_VERSION} AS runner`              | Starts a fresh Node.js 24 Alpine image — no leftover build artifacts               |
+| `ENV NODE_ENV=production`                          | Ensures Node.js runs in production mode                                            |
+| `WORKDIR /app`                                     | Sets `/app` as the working directory inside the container                          |
+| `COPY --from=builder /app/dist ./dist`             | Copies only the compiled static files from the builder stage                       |
+| `RUN npm install serve@^14.2.6 --omit=dev`         | Installs the pinned `serve` package only — no global install, no dev dependencies  |
+| `USER node`                                        | Drops root privileges following container security best practices                  |
+| `EXPOSE 3000`                                      | Declares port `3000` as the application's listening port                           |
+| `CMD ["npx", "serve", "-s", "dist", "-l", "3000"]` | Starts `serve` to host the static build on port `3000`                             |
+
+---
+
+## ✅ Benefits
+
+| Benefit                     | Details                                                                                      |
+| --------------------------- | -------------------------------------------------------------------------------------------- |
+| 📦 **Smaller image size**   | Final image contains only the production build and `serve` — no Node modules or build tools  |
+| 🔒 **Enhanced security**    | Dev dependencies excluded; app runs as non-root `node` user                                  |
+| ⚡ **Better performance**   | `serve` efficiently delivers static files with minimal runtime overhead                      |
