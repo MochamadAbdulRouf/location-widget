@@ -10,7 +10,7 @@ export default function Index() {
 
       <div className="flex flex-col items-center gap-3">
         <LocationTag />
-        <p className="text-sm text-muted-foreground">Hover to reveal</p>
+        <p className="text-sm text-muted-foreground">Hover to reveal · Click to switch</p>
       </div>
 
       <hr className="w-24 border-border" />
