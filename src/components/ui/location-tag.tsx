@@ -185,7 +185,9 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
           >
             {currentTime} {location.timezone}
             {currentWeather && (
-              <span className="ml-2 text-muted-foreground">{currentWeather.temperature}°C</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                {currentWeather.temperature}°C · 💧{currentWeather.humidity}% · 💨{currentWeather.windSpeed} km/h · {getWeatherLabel(currentWeather.weatherCode)}
+              </span>
             )}
           </span>
         </div>
