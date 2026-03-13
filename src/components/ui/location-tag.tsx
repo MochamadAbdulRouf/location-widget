@@ -85,7 +85,7 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
       const results = await Promise.all(
         LOCATIONS.map(async (loc) => {
           const res = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code`
+            `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`
           )
           if (!res.ok) return null
           const data = await res.json()
@@ -93,6 +93,8 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
             iana: loc.iana,
             temperature: Math.round(data.current.temperature_2m),
             weatherCode: data.current.weather_code,
+            humidity: data.current.relative_humidity_2m,
+            windSpeed: Math.round(data.current.wind_speed_10m),
           }
         })
       )
