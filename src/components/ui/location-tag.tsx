@@ -101,7 +101,7 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
 
       const map: Record<string, WeatherData> = {}
       results.forEach((r) => {
-        if (r) map[r.iana] = { temperature: r.temperature, weatherCode: r.weatherCode }
+        if (r) map[r.iana] = { temperature: r.temperature, weatherCode: r.weatherCode, humidity: r.humidity, windSpeed: r.windSpeed }
       })
       setWeatherMap(map)
     } catch (e) {
