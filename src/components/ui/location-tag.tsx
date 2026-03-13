@@ -14,6 +14,8 @@ interface Location {
 interface WeatherData {
   temperature: number
   weatherCode: number
+  humidity: number
+  windSpeed: number
 }
 
 const LOCATIONS: Location[] = [
@@ -83,7 +85,7 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
       const results = await Promise.all(
         LOCATIONS.map(async (loc) => {
           const res = await fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code`
+            `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`
           )
           if (!res.ok) return null
           const data = await res.json()
@@ -91,13 +93,15 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
             iana: loc.iana,
             temperature: Math.round(data.current.temperature_2m),
             weatherCode: data.current.weather_code,
+            humidity: data.current.relative_humidity_2m,
+            windSpeed: Math.round(data.current.wind_speed_10m),
           }
         })
       )
 
       const map: Record<string, WeatherData> = {}
       results.forEach((r) => {
-        if (r) map[r.iana] = { temperature: r.temperature, weatherCode: r.weatherCode }
+        if (r) map[r.iana] = { temperature: r.temperature, weatherCode: r.weatherCode, humidity: r.humidity, windSpeed: r.windSpeed }
       })
       setWeatherMap(map)
     } catch (e) {
@@ -181,7 +185,9 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
           >
             {currentTime} {location.timezone}
             {currentWeather && (
-              <span className="ml-2 text-muted-foreground">{currentWeather.temperature}°C</span>
+              <span className="ml-2 text-xs text-muted-foreground">
+                {currentWeather.temperature}°C · 💧{currentWeather.humidity}% · 💨{currentWeather.windSpeed} km/h · {getWeatherLabel(currentWeather.weatherCode)}
+              </span>
             )}
           </span>
         </div>
