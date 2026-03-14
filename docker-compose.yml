@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NDOE_ENV=production
+      - NODE_ENV=production
 
   dev:
     build:
@@ -30,15 +30,15 @@ services:
           path: ./vite.config.ts
           target: /app/vite.config.ts
 
-   web:
-      build: .
-      ports:
-         - "3000:3000"
-      volumes:
-         - .:/app
-         - ./node_modules:/app/node_modules
-      environment:
-         NODE_ENV: development
-      stdin_open: true
-      tty: true
-      command: npm start
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - ./node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+    stdin_open: true
+    tty: true
+    command: npm start
