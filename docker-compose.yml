@@ -30,7 +30,6 @@ services:
           path: ./vite.config.ts
           target: /app/vite.config.ts
 
-services:
    web:
       build: .
       ports:
