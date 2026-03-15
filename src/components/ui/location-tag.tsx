@@ -147,7 +147,13 @@ export function LocationTag({ city, country, timezone, onLocationChange }: Locat
   const selectLocation = (index: number) => {
     setSelectedIndex(index)
     setIsOpen(false)
+    onLocationChange?.(LOCATIONS[index].iana)
   }
+
+  // Notify parent of initial location
+  useEffect(() => {
+    onLocationChange?.(LOCATIONS[selectedIndex].iana)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWeather = location.iana ? weatherMap[location.iana] : undefined
 
