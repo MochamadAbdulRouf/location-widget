@@ -70,6 +70,7 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
   const [currentTime, setCurrentTime] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [weatherMap, setWeatherMap] = useState<Record<string, WeatherData>>({})
 
   const location = city
@@ -135,7 +136,10 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
 
   const handleClick = () => {
     if (!city) {
-      setIsOpen((prev) => !prev)
+      setIsOpen((prev) => {
+        if (!prev) setSearchQuery("")
+        return !prev
+      })
     }
   }
 
@@ -219,27 +223,54 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
       {/* Dropdown */}
       {isOpen && (
         <div className="absolute top-full left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border/60 bg-popover p-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
-          {LOCATIONS.map((loc, i) => {
-            const w = weatherMap[loc.iana]
-            return (
-              <button
-                key={loc.iana}
-                onClick={() => selectLocation(i)}
-                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${
-                  i === selectedIndex ? "bg-accent text-accent-foreground font-medium" : "text-foreground"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  {w && <span>{getWeatherEmoji(w.weatherCode)}</span>}
-                  <span>{loc.city}, {loc.country}</span>
-                </span>
-                <span className="flex items-center gap-2 text-xs text-muted-foreground">
-                  {w && <span>{w.temperature}°C</span>}
-                  <span>{loc.timezone}</span>
-                </span>
-              </button>
-            )
-          })}
+          {/* Search input */}
+          <div className="px-2 pb-1.5">
+            <input
+              type="text"
+              placeholder="Search city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+              className="w-full rounded-lg border border-border/60 bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
+          </div>
+          <div className="max-h-52 overflow-y-auto">
+            {LOCATIONS
+              .map((loc, i) => ({ loc, i }))
+              .filter(({ loc }) => {
+                if (!searchQuery) return true
+                const q = searchQuery.toLowerCase()
+                return loc.city.toLowerCase().includes(q) || loc.country.toLowerCase().includes(q)
+              })
+              .map(({ loc, i }) => {
+                const w = weatherMap[loc.iana]
+                return (
+                  <button
+                    key={loc.iana}
+                    onClick={() => selectLocation(i)}
+                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition-colors hover:bg-accent ${
+                      i === selectedIndex ? "bg-accent text-accent-foreground font-medium" : "text-foreground"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      {w && <span>{getWeatherEmoji(w.weatherCode)}</span>}
+                      <span>{loc.city}, {loc.country}</span>
+                    </span>
+                    <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {w && <span>{w.temperature}°C</span>}
+                      <span>{loc.timezone}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            {LOCATIONS.filter((loc) => {
+              if (!searchQuery) return true
+              const q = searchQuery.toLowerCase()
+              return loc.city.toLowerCase().includes(q) || loc.country.toLowerCase().includes(q)
+            }).length === 0 && (
+              <p className="px-3 py-4 text-center text-sm text-muted-foreground">No results found</p>
+            )}
+          </div>
         </div>
       )}
 
