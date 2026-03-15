@@ -162,14 +162,14 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
           </span>
         </div>
 
-        {/* Location text */}
-        <div className="relative flex items-center overflow-hidden" style={{ minHeight: '1.5rem' }}>
-          {/* Default state: city + weather emoji */}
+        {/* Location text - grid stack so container auto-sizes to largest child */}
+        <div className="relative grid" style={{ minHeight: '1.5rem' }}>
+          {/* Default state */}
           <span
-            className="flex items-center gap-1.5 text-sm font-medium text-foreground transition-all duration-500 whitespace-nowrap"
+            className="col-start-1 row-start-1 flex items-center gap-1.5 text-sm font-medium text-foreground transition-opacity duration-500 whitespace-nowrap"
             style={{
-              transform: isHovered ? "translateY(-100%)" : "translateY(0)",
               opacity: isHovered ? 0 : 1,
+              pointerEvents: isHovered ? "none" : "auto",
             }}
           >
             {currentWeather && (
@@ -180,22 +180,20 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
 
           {/* Hover state: time + detailed weather */}
           <span
-            className="absolute inset-x-0 flex items-center gap-2 text-sm font-medium text-foreground transition-all duration-500 whitespace-nowrap"
+            className="col-start-1 row-start-1 flex items-center gap-2 text-sm font-medium text-foreground transition-opacity duration-500 whitespace-nowrap"
             style={{
-              transform: isHovered ? "translateY(0)" : "translateY(100%)",
               opacity: isHovered ? 1 : 0,
+              pointerEvents: isHovered ? "auto" : "none",
             }}
           >
             <span>{currentTime} {location.timezone}</span>
             {currentWeather && (
               <>
                 <span className="h-3 w-px bg-border" />
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span>{currentWeather.temperature}°C</span>
-                  <span>💧{currentWeather.humidity}%</span>
-                  <span>💨{currentWeather.windSpeed} km/h</span>
-                  <span>{getWeatherLabel(currentWeather.weatherCode)}</span>
-                </span>
+                <span>{currentWeather.temperature}°C</span>
+                <span className="text-xs text-muted-foreground">💧{currentWeather.humidity}%</span>
+                <span className="text-xs text-muted-foreground">💨{currentWeather.windSpeed} km/h</span>
+                <span className="text-xs text-muted-foreground">{getWeatherLabel(currentWeather.weatherCode)}</span>
               </>
             )}
           </span>
