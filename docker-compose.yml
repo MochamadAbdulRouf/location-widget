@@ -43,4 +43,4 @@ services:
       NODE_ENV: development
     stdin_open: true
     tty: true
-    command: npm start
+    command: npm run dev
