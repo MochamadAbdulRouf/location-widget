@@ -70,6 +70,7 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
   const [currentTime, setCurrentTime] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [weatherMap, setWeatherMap] = useState<Record<string, WeatherData>>({})
 
   const location = city
