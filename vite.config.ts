@@ -25,11 +25,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // Jika Anda mendapatkan error 'optimizeDeps', tambahkan ini:
-  optimizeDeps: {
-    // Vite v8 mulai menggunakan rolldownOptions sebagai pengganti rollupOptions
-    rolldownOptions: {
-      // biarkan kosong jika tidak ada kustomisasi khusus
-    },
-  },
 }));
