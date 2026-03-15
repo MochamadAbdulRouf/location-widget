@@ -18,7 +18,7 @@ interface WeatherData {
   windSpeed: number
 }
 
-const LOCATIONS: Location[] = [
+export const LOCATIONS: Location[] = [
   { city: "San Francisco", country: "USA", timezone: "PST", iana: "America/Los_Angeles", lat: 37.77, lon: -122.42 },
   { city: "New York", country: "USA", timezone: "EST", iana: "America/New_York", lat: 40.71, lon: -74.01 },
   { city: "London", country: "UK", timezone: "GMT", iana: "Europe/London", lat: 51.51, lon: -0.13 },
@@ -63,9 +63,10 @@ interface LocationTagProps {
   city?: string
   country?: string
   timezone?: string
+  onLocationChange?: (iana: string) => void
 }
 
-export function LocationTag({ city, country, timezone }: LocationTagProps) {
+export function LocationTag({ city, country, timezone, onLocationChange }: LocationTagProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [currentTime, setCurrentTime] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
@@ -146,7 +147,13 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
   const selectLocation = (index: number) => {
     setSelectedIndex(index)
     setIsOpen(false)
+    onLocationChange?.(LOCATIONS[index].iana)
   }
+
+  // Notify parent of initial location
+  useEffect(() => {
+    onLocationChange?.(LOCATIONS[selectedIndex].iana)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWeather = location.iana ? weatherMap[location.iana] : undefined
 
