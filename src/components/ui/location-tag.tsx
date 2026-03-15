@@ -163,10 +163,11 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
         </div>
 
         {/* Location text - grid stack so container auto-sizes to largest child */}
-        <div className="relative grid" style={{ minHeight: '1.5rem' }}>
+        {/* Location text - grid stack */}
+        <div className="relative grid justify-items-center" style={{ minHeight: '1.5rem' }}>
           {/* Default state */}
           <span
-            className="col-start-1 row-start-1 flex items-center gap-1.5 text-sm font-medium text-foreground transition-opacity duration-500 whitespace-nowrap"
+            className="col-start-1 row-start-1 flex items-center justify-center gap-1.5 text-sm font-medium text-foreground transition-opacity duration-500 whitespace-nowrap"
             style={{
               opacity: isHovered ? 0 : 1,
               pointerEvents: isHovered ? "none" : "auto",
@@ -180,7 +181,7 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
 
           {/* Hover state: time + detailed weather */}
           <span
-            className="col-start-1 row-start-1 flex items-center gap-2 text-sm font-medium text-foreground transition-opacity duration-500 whitespace-nowrap"
+            className="col-start-1 row-start-1 flex items-center justify-center gap-2 text-sm font-medium text-foreground transition-opacity duration-500 whitespace-nowrap"
             style={{
               opacity: isHovered ? 1 : 0,
               pointerEvents: isHovered ? "auto" : "none",
