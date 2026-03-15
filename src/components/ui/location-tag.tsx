@@ -63,9 +63,10 @@ interface LocationTagProps {
   city?: string
   country?: string
   timezone?: string
+  onLocationChange?: (iana: string) => void
 }
 
-export function LocationTag({ city, country, timezone }: LocationTagProps) {
+export function LocationTag({ city, country, timezone, onLocationChange }: LocationTagProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [currentTime, setCurrentTime] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
