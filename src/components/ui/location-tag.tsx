@@ -18,7 +18,7 @@ interface WeatherData {
   windSpeed: number
 }
 
-const LOCATIONS: Location[] = [
+export const LOCATIONS: Location[] = [
   { city: "San Francisco", country: "USA", timezone: "PST", iana: "America/Los_Angeles", lat: 37.77, lon: -122.42 },
   { city: "New York", country: "USA", timezone: "EST", iana: "America/New_York", lat: 40.71, lon: -74.01 },
   { city: "London", country: "UK", timezone: "GMT", iana: "Europe/London", lat: 51.51, lon: -0.13 },
