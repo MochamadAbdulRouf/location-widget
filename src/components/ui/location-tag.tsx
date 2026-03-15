@@ -136,7 +136,10 @@ export function LocationTag({ city, country, timezone }: LocationTagProps) {
 
   const handleClick = () => {
     if (!city) {
-      setIsOpen((prev) => !prev)
+      setIsOpen((prev) => {
+        if (!prev) setSearchQuery("")
+        return !prev
+      })
     }
   }
 
