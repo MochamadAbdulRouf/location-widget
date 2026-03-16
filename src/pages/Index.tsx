@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { LocationTag, LOCATIONS } from "@/components/ui/location-tag";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { PomodoroTimer } from "@/components/PomodoroTimer";
 
 function RealtimeClock({ iana }: { iana: string }) {
   const [time, setTime] = useState("");
