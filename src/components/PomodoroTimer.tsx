@@ -1,5 +1,39 @@
-import { useState, useEffect, useRef } from "react";
-import { RotateCcw, Plus, Check, X, Settings } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { RotateCcw, Plus, Check, X, Settings, Bell } from "lucide-react";
+
+// Notification helpers
+function playAlarmSound() {
+  try {
+    const ctx = new AudioContext();
+    const times = [0, 0.25, 0.5];
+    times.forEach((t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 830;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + t);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.2);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.2);
+    });
+  } catch (e) {
+    console.warn("Could not play sound:", e);
+  }
+}
+
+function sendBrowserNotification(title: string, body: string) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body, icon: "🍅" });
+  }
+}
+
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
 
 // Types
 interface PomodoroTask {
@@ -74,6 +108,16 @@ export function PomodoroTimer() {
   useEffect(() => { localStorage.setItem("pomodoro-sessions", String(sessions)); }, [sessions]);
   useEffect(() => { saveJson("pomodoro-durations", durations); }, [durations]);
 
+  // Notification on timer complete
+  const notifyComplete = useCallback((m: PomodoroMode) => {
+    playAlarmSound();
+    const labels = { pomodoro: "Focus session", shortBreak: "Short break", longBreak: "Long break" };
+    sendBrowserNotification(`${labels[m]} complete!`, "Time to switch!");
+  }, []);
+
+  // Request notification permission on first interaction
+  useEffect(() => { requestNotificationPermission(); }, []);
+
   // Timer tick — runs for the ACTIVE mode only
   useEffect(() => {
     if (!running) {
@@ -84,18 +128,18 @@ export function PomodoroTimer() {
       setModeTimers((prev) => {
         const cur = prev[mode];
         if (cur <= 1) {
-          // Timer finished
           setModeRunning((r) => ({ ...r, [mode]: false }));
           if (mode === "pomodoro") {
             setSessions((s) => (s + 1) % 4);
           }
+          notifyComplete(mode);
           return { ...prev, [mode]: 0 };
         }
         return { ...prev, [mode]: cur - 1 };
       });
     }, 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, mode]);
+  }, [running, mode, notifyComplete]);
 
   // Also tick background modes that are running
   useEffect(() => {
@@ -109,6 +153,7 @@ export function PomodoroTimer() {
             next[m] = 0;
             setModeRunning((r) => ({ ...r, [m]: false }));
             if (m === "pomodoro") setSessions((s) => (s + 1) % 4);
+            notifyComplete(m);
           } else {
             next[m] = next[m] - 1;
           }
