@@ -108,6 +108,16 @@ export function PomodoroTimer() {
   useEffect(() => { localStorage.setItem("pomodoro-sessions", String(sessions)); }, [sessions]);
   useEffect(() => { saveJson("pomodoro-durations", durations); }, [durations]);
 
+  // Notification on timer complete
+  const notifyComplete = useCallback((m: PomodoroMode) => {
+    playAlarmSound();
+    const labels = { pomodoro: "Focus session", shortBreak: "Short break", longBreak: "Long break" };
+    sendBrowserNotification(`${labels[m]} complete!`, "Time to switch!");
+  }, []);
+
+  // Request notification permission on first interaction
+  useEffect(() => { requestNotificationPermission(); }, []);
+
   // Timer tick — runs for the ACTIVE mode only
   useEffect(() => {
     if (!running) {
@@ -118,18 +128,18 @@ export function PomodoroTimer() {
       setModeTimers((prev) => {
         const cur = prev[mode];
         if (cur <= 1) {
-          // Timer finished
           setModeRunning((r) => ({ ...r, [mode]: false }));
           if (mode === "pomodoro") {
             setSessions((s) => (s + 1) % 4);
           }
+          notifyComplete(mode);
           return { ...prev, [mode]: 0 };
         }
         return { ...prev, [mode]: cur - 1 };
       });
     }, 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, mode]);
+  }, [running, mode, notifyComplete]);
 
   // Also tick background modes that are running
   useEffect(() => {
