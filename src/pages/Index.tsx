@@ -66,6 +66,10 @@ export default function Index() {
       <p className="text-sm text-muted-foreground">
         Hover to reveal · Click to switch
       </p>
+
+      <div className="mt-4">
+        <PomodoroTimer />
+      </div>
     </div>
   );
 }
