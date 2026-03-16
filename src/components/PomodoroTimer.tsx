@@ -153,6 +153,7 @@ export function PomodoroTimer() {
             next[m] = 0;
             setModeRunning((r) => ({ ...r, [m]: false }));
             if (m === "pomodoro") setSessions((s) => (s + 1) % 4);
+            notifyComplete(m);
           } else {
             next[m] = next[m] - 1;
           }
