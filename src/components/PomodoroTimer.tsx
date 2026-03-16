@@ -1,5 +1,39 @@
-import { useState, useEffect, useRef } from "react";
-import { RotateCcw, Plus, Check, X, Settings } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { RotateCcw, Plus, Check, X, Settings, Bell } from "lucide-react";
+
+// Notification helpers
+function playAlarmSound() {
+  try {
+    const ctx = new AudioContext();
+    const times = [0, 0.25, 0.5];
+    times.forEach((t) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 830;
+      osc.type = "sine";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime + t);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.2);
+      osc.start(ctx.currentTime + t);
+      osc.stop(ctx.currentTime + t + 0.2);
+    });
+  } catch (e) {
+    console.warn("Could not play sound:", e);
+  }
+}
+
+function sendBrowserNotification(title: string, body: string) {
+  if ("Notification" in window && Notification.permission === "granted") {
+    new Notification(title, { body, icon: "🍅" });
+  }
+}
+
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
 
 // Types
 interface PomodoroTask {
