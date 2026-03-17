@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { RotateCcw, Plus, Check, X, Settings, Bell } from "lucide-react";
+import { RotateCcw, Plus, Check, X, Settings } from "lucide-react";
 
 // Notification helpers
 function playAlarmSound() {
@@ -71,14 +71,15 @@ function loadNum(key: string, fallback: number): number {
 export function PomodoroTimer() {
   // Settings
   const [durations, setDurations] = useState<DurationSettings>(() => loadJson("pomodoro-durations", DEFAULT_DURATIONS));
+  const [longBreakInterval, setLongBreakInterval] = useState(() => loadNum("pomodoro-long-break-interval", 4));
   const [showSettings, setShowSettings] = useState(false);
   const [draftDurations, setDraftDurations] = useState(durations);
+  const [draftLongBreakInterval, setDraftLongBreakInterval] = useState(longBreakInterval);
 
   // Per-mode state preserved across tab switches AND browser refresh
   const [modeTimers, setModeTimers] = useState<Record<PomodoroMode, number>>(() => {
     const saved = loadJson<{ timers: Record<PomodoroMode, number>; timestamp: number } | null>("pomodoro-mode-timers", null);
     if (saved && saved.timers) {
-      // Calculate elapsed time since last save to adjust running timers
       const runningState = loadJson<Record<PomodoroMode, boolean>>("pomodoro-mode-running", { pomodoro: false, shortBreak: false, longBreak: false });
       const elapsed = Math.floor((Date.now() - saved.timestamp) / 1000);
       const timers = { ...saved.timers };
@@ -93,7 +94,6 @@ export function PomodoroTimer() {
   });
   const [modeRunning, setModeRunning] = useState<Record<PomodoroMode, boolean>>(() => {
     const saved = loadJson<Record<PomodoroMode, boolean>>("pomodoro-mode-running", { pomodoro: false, shortBreak: false, longBreak: false });
-    // If a timer hit 0 while page was closed, stop it
     const timers = loadJson<{ timers: Record<PomodoroMode, number>; timestamp: number } | null>("pomodoro-mode-timers", null);
     if (timers) {
       const elapsed = Math.floor((Date.now() - timers.timestamp) / 1000);
@@ -121,6 +121,9 @@ export function PomodoroTimer() {
   const [newTaskEstimate, setNewTaskEstimate] = useState(1);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Queue for auto-switching mode after timer completes
+  const pendingSwitchRef = useRef<PomodoroMode | null>(null);
+
   const timeLeft = modeTimers[mode];
   const running = modeRunning[mode];
   const totalDuration = durations[mode] * 60;
@@ -133,17 +136,52 @@ export function PomodoroTimer() {
   }, [activeTaskId]);
   useEffect(() => { localStorage.setItem("pomodoro-sessions", String(sessions)); }, [sessions]);
   useEffect(() => { saveJson("pomodoro-durations", durations); }, [durations]);
+  useEffect(() => { localStorage.setItem("pomodoro-long-break-interval", String(longBreakInterval)); }, [longBreakInterval]);
   useEffect(() => { saveJson("pomodoro-mode-timers", { timers: modeTimers, timestamp: Date.now() }); }, [modeTimers]);
   useEffect(() => { saveJson("pomodoro-mode-running", modeRunning); }, [modeRunning]);
   useEffect(() => { localStorage.setItem("pomodoro-active-mode", mode); }, [mode]);
   useEffect(() => { localStorage.setItem("pomodoro-show-tasks", String(showTasks)); }, [showTasks]);
 
-  // Notification on timer complete
-  const notifyComplete = useCallback((m: PomodoroMode) => {
+  // Auto-switch handler: after state settles, apply pending switch
+  useEffect(() => {
+    if (pendingSwitchRef.current) {
+      const nextMode = pendingSwitchRef.current;
+      pendingSwitchRef.current = null;
+      // Reset the next mode timer and auto-start it
+      setModeTimers((prev) => ({ ...prev, [nextMode]: durations[nextMode] * 60 }));
+      setModeRunning((prev) => ({ ...prev, [nextMode]: true }));
+      setMode(nextMode);
+    }
+  });
+
+  // Determine next mode after pomodoro completes
+  const getNextModeAfterPomodoro = useCallback((currentSessions: number): PomodoroMode => {
+    // currentSessions is the NEW count (after increment)
+    if (currentSessions > 0 && currentSessions % longBreakInterval === 0) {
+      return "longBreak";
+    }
+    return "shortBreak";
+  }, [longBreakInterval]);
+
+  // Handle timer completion with auto-switch
+  const handleTimerComplete = useCallback((completedMode: PomodoroMode) => {
     playAlarmSound();
     const labels = { pomodoro: "Focus session", shortBreak: "Short break", longBreak: "Long break" };
-    sendBrowserNotification(`${labels[m]} complete!`, "Time to switch!");
-  }, []);
+
+    if (completedMode === "pomodoro") {
+      setSessions((prev) => {
+        const next = prev + 1;
+        const nextMode = getNextModeAfterPomodoro(next);
+        sendBrowserNotification(`${labels[completedMode]} complete!`, `Switching to ${MODE_META[nextMode].label}...`);
+        pendingSwitchRef.current = nextMode;
+        return next;
+      });
+    } else {
+      // Break finished → switch back to pomodoro
+      sendBrowserNotification(`${labels[completedMode]} complete!`, "Time to focus!");
+      pendingSwitchRef.current = "pomodoro";
+    }
+  }, [getNextModeAfterPomodoro]);
 
   // Request notification permission on first interaction
   useEffect(() => { requestNotificationPermission(); }, []);
@@ -159,17 +197,14 @@ export function PomodoroTimer() {
         const cur = prev[mode];
         if (cur <= 1) {
           setModeRunning((r) => ({ ...r, [mode]: false }));
-          if (mode === "pomodoro") {
-            setSessions((s) => (s + 1) % 4);
-          }
-          notifyComplete(mode);
+          handleTimerComplete(mode);
           return { ...prev, [mode]: 0 };
         }
         return { ...prev, [mode]: cur - 1 };
       });
     }, 1000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [running, mode, notifyComplete]);
+  }, [running, mode, handleTimerComplete]);
 
   // Also tick background modes that are running
   useEffect(() => {
@@ -182,8 +217,7 @@ export function PomodoroTimer() {
           if (next[m] <= 1) {
             next[m] = 0;
             setModeRunning((r) => ({ ...r, [m]: false }));
-            if (m === "pomodoro") setSessions((s) => (s + 1) % 4);
-            notifyComplete(m);
+            handleTimerComplete(m);
           } else {
             next[m] = next[m] - 1;
           }
@@ -192,10 +226,9 @@ export function PomodoroTimer() {
       });
     }, 1000);
     return () => clearInterval(id);
-  }, [mode, modeRunning]);
+  }, [mode, modeRunning, handleTimerComplete]);
 
   const switchMode = (m: PomodoroMode) => {
-    // Just switch view — don't reset anything
     setMode(m);
   };
 
@@ -210,7 +243,7 @@ export function PomodoroTimer() {
 
   const applySettings = () => {
     setDurations(draftDurations);
-    // Reset timers for modes that aren't currently running
+    setLongBreakInterval(draftLongBreakInterval);
     setModeTimers((prev) => {
       const next = { ...prev };
       (Object.keys(draftDurations) as PomodoroMode[]).forEach((m) => {
@@ -253,8 +286,8 @@ export function PomodoroTimer() {
     if (activeTaskId === id) setActiveTaskId(null);
   };
 
-  // Check if any background timer is running
-  const hasBackgroundRunning = (Object.keys(modeRunning) as PomodoroMode[]).some((m) => m !== mode && modeRunning[m]);
+  // Session progress toward long break
+  const sessionsUntilLongBreak = longBreakInterval - (sessions % longBreakInterval);
 
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-sm">
@@ -272,7 +305,6 @@ export function PomodoroTimer() {
               }`}
             >
               {MODE_META[m].label}
-              {/* Running indicator dot for background timers */}
               {m !== mode && modeRunning[m] && (
                 <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
@@ -283,7 +315,7 @@ export function PomodoroTimer() {
           ))}
         </div>
         <button
-          onClick={() => { setDraftDurations(durations); setShowSettings((s) => !s); }}
+          onClick={() => { setDraftDurations(durations); setDraftLongBreakInterval(longBreakInterval); setShowSettings((s) => !s); }}
           className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
         >
           <Settings size={14} />
@@ -312,6 +344,18 @@ export function PomodoroTimer() {
                 />
               </div>
             ))}
+          </div>
+          {/* Long break interval setting */}
+          <div className="flex flex-col items-center gap-1.5 pt-1">
+            <label className="text-xs text-muted-foreground">Long Break every N sessions</label>
+            <input
+              type="number"
+              min={2}
+              max={10}
+              value={draftLongBreakInterval}
+              onChange={(e) => setDraftLongBreakInterval(Math.max(2, Math.min(10, Number(e.target.value))))}
+              className="w-16 rounded-lg border border-border/60 bg-background px-2 py-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            />
           </div>
           <div className="flex items-center justify-center gap-2 pt-1">
             <button
@@ -367,11 +411,16 @@ export function PomodoroTimer() {
         </button>
       </div>
 
-      {/* Session dots */}
-      <div className="flex items-center gap-2">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className={`h-2 w-2 rounded-full transition-colors duration-300 ${i < sessions ? "bg-foreground" : "bg-border"}`} />
-        ))}
+      {/* Session dots — shows progress toward long break */}
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-2">
+          {Array.from({ length: longBreakInterval }).map((_, i) => (
+            <div key={i} className={`h-2 w-2 rounded-full transition-colors duration-300 ${i < (sessions % longBreakInterval) ? "bg-foreground" : "bg-border"}`} />
+          ))}
+        </div>
+        <span className="text-[10px] text-muted-foreground">
+          {sessionsUntilLongBreak === longBreakInterval ? `${longBreakInterval} sessions to long break` : `${sessionsUntilLongBreak} left to long break`}
+        </span>
       </div>
 
       {/* Active task label */}
