@@ -66,10 +66,19 @@ interface LocationTagProps {
   onLocationChange?: (iana: string) => void
 }
 
+function detectDefaultIndex(): number {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const idx = LOCATIONS.findIndex((l) => l.iana === tz)
+    if (idx !== -1) return idx
+  } catch {}
+  return 0
+}
+
 export function LocationTag({ city, country, timezone, onLocationChange }: LocationTagProps) {
   const [isHovered, setIsHovered] = useState(false)
   const [currentTime, setCurrentTime] = useState("")
-  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [selectedIndex, setSelectedIndex] = useState(detectDefaultIndex)
   const [isOpen, setIsOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [weatherMap, setWeatherMap] = useState<Record<string, WeatherData>>({})
