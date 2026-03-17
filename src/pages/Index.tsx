@@ -18,7 +18,7 @@ function RealtimeClock({ iana }: { iana: string }) {
           second: "2-digit",
           hour12: false,
           timeZone: iana,
-        })
+        }),
       );
       setDate(
         now.toLocaleDateString("en-US", {
@@ -26,7 +26,7 @@ function RealtimeClock({ iana }: { iana: string }) {
           month: "short",
           day: "numeric",
           timeZone: iana,
-        })
+        }),
       );
     };
     update();
@@ -40,9 +40,13 @@ function RealtimeClock({ iana }: { iana: string }) {
     <div className="flex flex-col items-center select-none">
       <div className="flex items-baseline gap-1 font-mono tracking-tight">
         <span className="text-5xl font-bold text-foreground">{h}</span>
-        <span className="text-5xl font-bold text-foreground/30 animate-pulse">:</span>
+        <span className="text-5xl font-bold text-foreground/30 animate-pulse">
+          :
+        </span>
         <span className="text-5xl font-bold text-foreground">{m}</span>
-        <span className="text-5xl font-bold text-foreground/30 animate-pulse">:</span>
+        <span className="text-5xl font-bold text-foreground/30 animate-pulse">
+          :
+        </span>
         <span className="text-5xl font-bold text-foreground">{s}</span>
       </div>
       <span className="mt-1 text-sm text-muted-foreground">{date}</span>
@@ -50,7 +54,15 @@ function RealtimeClock({ iana }: { iana: string }) {
   );
 }
 
-function BackgroundUploader({ bgImage, onSet, onRemove }: { bgImage: string | null; onSet: (data: string) => void; onRemove: () => void }) {
+function BackgroundUploader({
+  bgImage,
+  onSet,
+  onRemove,
+}: {
+  bgImage: string | null;
+  onSet: (data: string) => void;
+  onRemove: () => void;
+}) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +84,13 @@ function BackgroundUploader({ bgImage, onSet, onRemove }: { bgImage: string | nu
 
   return (
     <div className="flex items-center gap-2">
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFile}
+      />
       <button
         onClick={() => fileRef.current?.click()}
         className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
@@ -95,12 +113,20 @@ function BackgroundUploader({ bgImage, onSet, onRemove }: { bgImage: string | nu
 export default function Index() {
   const [iana, setIana] = useState(LOCATIONS[0].iana);
   const [bgImage, setBgImage] = useState<string | null>(() => {
-    try { return localStorage.getItem("app-bg-image"); } catch { return null; }
+    try {
+      return localStorage.getItem("app-bg-image");
+    } catch {
+      return null;
+    }
   });
 
   const handleSetBg = (data: string) => {
     setBgImage(data);
-    try { localStorage.setItem("app-bg-image", data); } catch { /* quota exceeded */ }
+    try {
+      localStorage.setItem("app-bg-image", data);
+    } catch {
+      /* quota exceeded */
+    }
   };
 
   const handleRemoveBg = () => {
@@ -111,12 +137,16 @@ export default function Index() {
   return (
     <div
       className="relative flex min-h-screen flex-col items-center justify-center gap-8 p-8 bg-background"
-      style={bgImage ? {
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      } : undefined}
+      style={
+        bgImage
+          ? {
+              backgroundImage: `url(${bgImage})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }
+          : undefined
+      }
     >
       {/* Overlay for readability when bg image is set */}
       {bgImage && (
@@ -124,8 +154,15 @@ export default function Index() {
       )}
 
       <div className="relative z-10 flex flex-col items-center justify-center gap-8 w-full">
-        <div className="absolute top-0 right-0 flex items-center gap-2">
-          <BackgroundUploader bgImage={bgImage} onSet={handleSetBg} onRemove={handleRemoveBg} />
+        <div className="absolute top-4 left-4 flex items-center gap-2">
+          <BackgroundUploader
+            bgImage={bgImage}
+            onSet={handleSetBg}
+            onRemove={handleRemoveBg}
+          />
+        </div>
+
+        <div className="absolute top-4 right-4">
           <ThemeToggle />
         </div>
 
@@ -134,11 +171,11 @@ export default function Index() {
           <LocationTag onLocationChange={setIana} />
         </div>
 
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground my-0">
           Hover to reveal · Click to switch
         </p>
 
-        <div className="mt-4">
+        <div className="mt-1">
           <PomodoroTimer />
         </div>
       </div>
