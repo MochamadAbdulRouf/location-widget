@@ -74,23 +74,49 @@ export function PomodoroTimer() {
   const [showSettings, setShowSettings] = useState(false);
   const [draftDurations, setDraftDurations] = useState(durations);
 
-  // Per-mode state preserved across tab switches
-  const [modeTimers, setModeTimers] = useState<Record<PomodoroMode, number>>(() => ({
-    pomodoro: durations.pomodoro * 60,
-    shortBreak: durations.shortBreak * 60,
-    longBreak: durations.longBreak * 60,
-  }));
-  const [modeRunning, setModeRunning] = useState<Record<PomodoroMode, boolean>>({
-    pomodoro: false, shortBreak: false, longBreak: false,
+  // Per-mode state preserved across tab switches AND browser refresh
+  const [modeTimers, setModeTimers] = useState<Record<PomodoroMode, number>>(() => {
+    const saved = loadJson<{ timers: Record<PomodoroMode, number>; timestamp: number } | null>("pomodoro-mode-timers", null);
+    if (saved && saved.timers) {
+      // Calculate elapsed time since last save to adjust running timers
+      const runningState = loadJson<Record<PomodoroMode, boolean>>("pomodoro-mode-running", { pomodoro: false, shortBreak: false, longBreak: false });
+      const elapsed = Math.floor((Date.now() - saved.timestamp) / 1000);
+      const timers = { ...saved.timers };
+      (Object.keys(timers) as PomodoroMode[]).forEach((m) => {
+        if (runningState[m]) {
+          timers[m] = Math.max(0, timers[m] - elapsed);
+        }
+      });
+      return timers;
+    }
+    return { pomodoro: durations.pomodoro * 60, shortBreak: durations.shortBreak * 60, longBreak: durations.longBreak * 60 };
+  });
+  const [modeRunning, setModeRunning] = useState<Record<PomodoroMode, boolean>>(() => {
+    const saved = loadJson<Record<PomodoroMode, boolean>>("pomodoro-mode-running", { pomodoro: false, shortBreak: false, longBreak: false });
+    // If a timer hit 0 while page was closed, stop it
+    const timers = loadJson<{ timers: Record<PomodoroMode, number>; timestamp: number } | null>("pomodoro-mode-timers", null);
+    if (timers) {
+      const elapsed = Math.floor((Date.now() - timers.timestamp) / 1000);
+      (Object.keys(saved) as PomodoroMode[]).forEach((m) => {
+        if (saved[m] && timers.timers[m] - elapsed <= 0) {
+          saved[m] = false;
+        }
+      });
+    }
+    return saved;
   });
 
-  const [mode, setMode] = useState<PomodoroMode>("pomodoro");
+  const [mode, setMode] = useState<PomodoroMode>(() => {
+    try { const s = localStorage.getItem("pomodoro-active-mode"); return (s as PomodoroMode) || "pomodoro"; } catch { return "pomodoro"; }
+  });
   const [sessions, setSessions] = useState(() => loadNum("pomodoro-sessions", 0));
   const [tasks, setTasks] = useState<PomodoroTask[]>(() => loadJson("pomodoro-tasks", []));
   const [activeTaskId, setActiveTaskId] = useState<string | null>(() => {
     try { return localStorage.getItem("pomodoro-active-task"); } catch { return null; }
   });
-  const [showTasks, setShowTasks] = useState(false);
+  const [showTasks, setShowTasks] = useState(() => {
+    try { return localStorage.getItem("pomodoro-show-tasks") === "true"; } catch { return false; }
+  });
   const [newTaskName, setNewTaskName] = useState("");
   const [newTaskEstimate, setNewTaskEstimate] = useState(1);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -107,6 +133,10 @@ export function PomodoroTimer() {
   }, [activeTaskId]);
   useEffect(() => { localStorage.setItem("pomodoro-sessions", String(sessions)); }, [sessions]);
   useEffect(() => { saveJson("pomodoro-durations", durations); }, [durations]);
+  useEffect(() => { saveJson("pomodoro-mode-timers", { timers: modeTimers, timestamp: Date.now() }); }, [modeTimers]);
+  useEffect(() => { saveJson("pomodoro-mode-running", modeRunning); }, [modeRunning]);
+  useEffect(() => { localStorage.setItem("pomodoro-active-mode", mode); }, [mode]);
+  useEffect(() => { localStorage.setItem("pomodoro-show-tasks", String(showTasks)); }, [showTasks]);
 
   // Notification on timer complete
   const notifyComplete = useCallback((m: PomodoroMode) => {
