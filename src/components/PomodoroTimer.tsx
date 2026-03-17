@@ -133,6 +133,10 @@ export function PomodoroTimer() {
   }, [activeTaskId]);
   useEffect(() => { localStorage.setItem("pomodoro-sessions", String(sessions)); }, [sessions]);
   useEffect(() => { saveJson("pomodoro-durations", durations); }, [durations]);
+  useEffect(() => { saveJson("pomodoro-mode-timers", { timers: modeTimers, timestamp: Date.now() }); }, [modeTimers]);
+  useEffect(() => { saveJson("pomodoro-mode-running", modeRunning); }, [modeRunning]);
+  useEffect(() => { localStorage.setItem("pomodoro-active-mode", mode); }, [mode]);
+  useEffect(() => { localStorage.setItem("pomodoro-show-tasks", String(showTasks)); }, [showTasks]);
 
   // Notification on timer complete
   const notifyComplete = useCallback((m: PomodoroMode) => {
