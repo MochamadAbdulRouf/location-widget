@@ -176,8 +176,9 @@ export default function Index() {
           Hover to reveal · Click to switch
         </p>
 
-        <div className="mt-1">
+        <div className="mt-1 w-full max-w-sm flex flex-col items-center gap-4">
           <PomodoroTimer />
+          <PomodoroStats />
         </div>
       </div>
     </div>
