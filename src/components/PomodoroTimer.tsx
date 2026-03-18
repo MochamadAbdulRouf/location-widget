@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RotateCcw, Plus, Check, X, Settings } from "lucide-react";
+import { logSession } from "./PomodoroStats";
 
 // Notification helpers
 function playAlarmSound() {
