@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { LocationTag, LOCATIONS } from "@/components/ui/location-tag";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { PomodoroTimer } from "@/components/PomodoroTimer";
+import { PomodoroStats } from "@/components/PomodoroStats";
 import { ImagePlus, X } from "lucide-react";
 
 function RealtimeClock({ iana }: { iana: string }) {
@@ -175,8 +176,9 @@ export default function Index() {
           Hover to reveal · Click to switch
         </p>
 
-        <div className="mt-1">
+        <div className="mt-1 w-full max-w-sm flex flex-col items-center gap-4">
           <PomodoroTimer />
+          <PomodoroStats />
         </div>
       </div>
     </div>

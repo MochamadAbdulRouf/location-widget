@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { RotateCcw, Plus, Check, X, Settings } from "lucide-react";
+import { logSession } from "./PomodoroStats";
 
 // Notification helpers
 function playAlarmSound() {
@@ -269,6 +270,11 @@ export function PomodoroTimer() {
       };
 
       if (completedMode === "pomodoro") {
+        logSession({
+          timestamp: Date.now(),
+          duration: durations.pomodoro,
+          type: "pomodoro",
+        });
         setSessions((prev) => {
           const next = prev + 1;
           const nextMode = getNextModeAfterPomodoro(next);
