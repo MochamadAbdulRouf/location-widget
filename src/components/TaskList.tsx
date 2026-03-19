@@ -1,11 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Check, Trash2, Play, Plus, Calendar, X } from "lucide-react";
+import { Check, Trash2, Play, Plus, Calendar, X, Edit2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 // Types
 export type TaskPriority = "high" | "medium" | "low";
 export type TaskStatus = "todo" | "in-progress" | "done";
 export type TaskFilter = "all" | "todo" | "in-progress" | "done";
+
+export interface SubTask {
+  id: string;
+  text: string;
+  isDone: boolean;
+}
 
 export interface FlowTask {
   id: string;
@@ -16,6 +22,7 @@ export interface FlowTask {
   status: TaskStatus;
   dueDate: string | null; // ISO date string
   createdAt: number;
+  subtasks: SubTask[];
 }
 
 const TASKS_KEY = "flowcast_tasks";
@@ -24,7 +31,13 @@ const ACTIVE_TASK_KEY = "flowcast_active_task";
 function loadTasks(): FlowTask[] {
   try {
     const raw = localStorage.getItem(TASKS_KEY);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    // Ensure every task has a subtasks array (migration for old data)
+    return parsed.map((t: any) => ({
+      ...t,
+      subtasks: t.subtasks || []
+    }));
   } catch {
     return [];
   }
@@ -159,8 +172,11 @@ export function TaskList({
   const [newPriority, setNewPriority] = useState<TaskPriority>("medium");
   const [newEstimate, setNewEstimate] = useState(1);
   const [newDueDate, setNewDueDate] = useState("");
+  const [newSubtasks, setNewSubtasks] = useState<string[]>([]);
+  const [currentSubtask, setCurrentSubtask] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
+  const [isEditingExisting, setIsEditingExisting] = useState<string | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -183,26 +199,89 @@ export function TaskList({
 
   useEffect(() => {
     if (showAddRow) inputRef.current?.focus();
+    if (!showAddRow) {
+      setIsEditingExisting(null);
+      setNewName("");
+      setNewPriority("medium");
+      setNewEstimate(1);
+      setNewDueDate("");
+      setNewSubtasks([]);
+    }
   }, [showAddRow]);
 
   const addTask = () => {
     if (!newName.trim()) return;
-    const task: FlowTask = {
-      id: crypto.randomUUID(),
-      name: newName.trim(),
-      priority: newPriority,
-      pomodoroEstimate: newEstimate,
-      pomodoroCount: 0,
-      status: "todo",
-      dueDate: newDueDate || null,
-      createdAt: Date.now(),
-    };
-    onTasksChange([task, ...tasks]);
+
+    if (isEditingExisting) {
+      onTasksChange(tasks.map(t => t.id === isEditingExisting ? {
+        ...t,
+        name: newName.trim(),
+        priority: newPriority,
+        pomodoroEstimate: newEstimate,
+        dueDate: newDueDate || null,
+        subtasks: newSubtasks.map(text => {
+          const existing = t.subtasks.find(s => s.text === text);
+          return existing || { id: crypto.randomUUID(), text, isDone: false };
+        })
+      } : t));
+      setIsEditingExisting(null);
+    } else {
+      const task: FlowTask = {
+        id: crypto.randomUUID(),
+        name: newName.trim(),
+        priority: newPriority,
+        pomodoroEstimate: newEstimate,
+        pomodoroCount: 0,
+        status: "todo",
+        dueDate: newDueDate || null,
+        createdAt: Date.now(),
+        subtasks: newSubtasks.map(text => ({
+          id: crypto.randomUUID(),
+          text,
+          isDone: false
+        }))
+      };
+      onTasksChange([task, ...tasks]);
+    }
+
     setNewName("");
     setNewPriority("medium");
     setNewEstimate(1);
     setNewDueDate("");
+    setNewSubtasks([]);
+    setCurrentSubtask("");
     setShowAddRow(false);
+  };
+
+  const startEditing = (task: FlowTask) => {
+    setIsEditingExisting(task.id);
+    setNewName(task.name);
+    setNewPriority(task.priority);
+    setNewEstimate(task.pomodoroEstimate);
+    setNewDueDate(task.dueDate || "");
+    setNewSubtasks(task.subtasks.map(s => s.text));
+    setShowAddRow(true);
+  };
+
+  const addSubtaskInput = () => {
+    if (currentSubtask.trim()) {
+      setNewSubtasks([...newSubtasks, currentSubtask.trim()]);
+      setCurrentSubtask("");
+    }
+  };
+
+  const removeNewSubtask = (index: number) => {
+    setNewSubtasks(newSubtasks.filter((_, i) => i !== index));
+  };
+
+  const toggleSubTask = (taskId: string, subTaskId: string) => {
+    onTasksChange(tasks.map(t => {
+      if (t.id !== taskId) return t;
+      return {
+        ...t,
+        subtasks: t.subtasks.map(st => st.id === subTaskId ? { ...st, isDone: !st.isDone } : st)
+      };
+    }));
   };
 
   const removeTask = (id: string) => {
@@ -308,7 +387,7 @@ export function TaskList({
               value={newName}
               onChange={e => setNewName(e.target.value)}
               onKeyDown={e => {
-                if (e.key === "Enter") addTask();
+                if (e.key === "Enter" && !currentSubtask) addTask();
                 if (e.key === "Escape") setShowAddRow(false);
               }}
               placeholder="Type task name..."
@@ -338,6 +417,39 @@ export function TaskList({
               />
             </div>
           </div>
+
+          {/* Subtasks input */}
+          <div className="space-y-1.5 py-1">
+            {newSubtasks.map((st, i) => (
+              <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground bg-background/40 px-2 py-0.5 rounded border border-border/20">
+                <span className="flex-1 truncate">• {st}</span>
+                <button onClick={() => removeNewSubtask(i)} className="hover:text-destructive">
+                  <X size={10} />
+                </button>
+              </div>
+            ))}
+            <div className="flex items-center gap-2 pl-1">
+              <input
+                value={currentSubtask}
+                onChange={e => setCurrentSubtask(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addSubtaskInput();
+                  }
+                }}
+                placeholder="Add a point (Press Enter)..."
+                className="flex-1 bg-transparent text-[11px] text-foreground outline-none border-b border-border/40 focus:border-foreground/30 py-0.5"
+              />
+              <button
+                onClick={addSubtaskInput}
+                className="h-5 w-5 flex items-center justify-center rounded hover:bg-background/50 text-muted-foreground"
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+          </div>
+
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -361,7 +473,7 @@ export function TaskList({
                 onClick={addTask}
                 className="rounded-full border border-border/60 bg-foreground text-background px-4 py-1 text-xs font-medium transition-all hover:opacity-90"
               >
-                Add
+                {isEditingExisting ? "Save" : "Add"}
               </button>
             </div>
           </div>
@@ -461,16 +573,52 @@ export function TaskList({
                       </span>
                     )}
                   </div>
+
+                  {/* Subtasks display */}
+                  {task.subtasks.length > 0 && (
+                    <div className="mt-2 space-y-1.5 ml-1 border-l border-border/40 pl-3 py-0.5">
+                      {task.subtasks.map(st => (
+                        <div key={st.id} className="flex items-center gap-2 group/st">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleSubTask(task.id, st.id);
+                            }}
+                            className={`h-3.5 w-3.5 shrink-0 rounded border flex items-center justify-center transition-all duration-200 ${
+                              st.isDone
+                                ? "bg-foreground/20 border-foreground/30 text-foreground"
+                                : "border-muted-foreground/30 hover:border-foreground/50 text-transparent"
+                            }`}
+                          >
+                            <Check size={8} className={st.isDone ? "opacity-100" : "opacity-0"} />
+                          </button>
+                          <span className={`text-[11px] transition-all duration-200 ${
+                            st.isDone ? "text-muted-foreground line-through opacity-70" : "text-foreground/80"
+                          }`}>
+                            {st.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Delete on hover */}
+                {/* Delete/Edit on hover */}
                 {isHovered && (
-                  <button
-                    onClick={() => removeTask(task.id)}
-                    className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 size={12} />
-                  </button>
+                  <div className="absolute right-2 top-2 flex items-center gap-1 animate-in fade-in slide-in-from-right-2 duration-200">
+                    <button
+                      onClick={() => startEditing(task)}
+                      className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary"
+                    >
+                      <Edit2 size={12} />
+                    </button>
+                    <button
+                      onClick={() => removeTask(task.id)}
+                      className="flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 )}
               </div>
             );
