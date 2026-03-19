@@ -136,7 +136,7 @@ export default function Index() {
 
   return (
     <div
-      className="relative flex min-h-screen flex-col items-center justify-start gap-6 p-8 bg-background"
+      className="relative flex min-h-screen flex-col items-center bg-background"
       style={
         bgImage
           ? { backgroundImage: `url(${bgImage})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }
@@ -145,45 +145,55 @@ export default function Index() {
     >
       {bgImage && <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />}
 
-      <div className="relative z-10 flex flex-col items-center justify-center gap-6 w-full max-w-md">
-        <div className="absolute top-0 left-0 flex items-center gap-2">
+      {/* Top Header */}
+      <header className="relative z-20 flex w-full max-w-6xl items-center justify-between px-8 py-6">
+        <div className="flex items-center gap-4">
           <BackgroundUploader bgImage={bgImage} onSet={handleSetBg} onRemove={handleRemoveBg} />
         </div>
-        <div className="absolute top-0 right-0">
+        <div className="flex items-center gap-4">
           <ThemeToggle />
         </div>
+      </header>
 
-        <div className="flex flex-col items-center gap-5 pt-10">
-          <RealtimeClock iana={iana} />
-          <LocationTag onLocationChange={setIana} />
+      <main className="relative z-10 w-full max-w-6xl flex-1 px-8 pb-12">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
+          {/* Left Column: Focus & Weather */}
+          <div className="flex flex-col items-center gap-8">
+            <div className="flex flex-col items-center gap-5">
+              <RealtimeClock iana={iana} />
+              <LocationTag onLocationChange={setIana} />
+              <p className="text-xs text-muted-foreground mt-[-10px] opacity-70 text-center">
+                Hover to reveal · Click to switch
+              </p>
+            </div>
+
+            <div className="w-full flex flex-col items-center gap-6">
+              <PomodoroTimer
+                activeTaskName={activeTask?.name}
+                activeTaskId={activeTaskId}
+                onClearActiveTask={handleClearActiveTask}
+                onPomodoroComplete={incrementPomodoro}
+              />
+              <PomodoroStats />
+            </div>
+          </div>
+
+          {/* Right Column: Smart To-Do */}
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-center">
+              <h2 className="text-xl font-semibold tracking-tight text-center">Smart To-Do</h2>
+            </div>
+            <TaskList
+              activeTaskId={activeTaskId}
+              onActiveTaskChange={setActiveTaskId}
+              tasks={tasks}
+              onTasksChange={setTasks}
+              timerRunning={timerRunning}
+              weatherCode={weatherCode}
+            />
+          </div>
         </div>
-
-        <p className="text-sm text-muted-foreground my-0">
-          Hover to reveal · Click to switch
-        </p>
-
-        <div className="w-full flex flex-col items-center gap-4">
-          <PomodoroTimer
-            activeTaskName={activeTask?.name}
-            activeTaskId={activeTaskId}
-            onClearActiveTask={handleClearActiveTask}
-            onPomodoroComplete={incrementPomodoro}
-          />
-          <PomodoroStats />
-        </div>
-
-        {/* Task List */}
-        <div className="w-full">
-          <TaskList
-            activeTaskId={activeTaskId}
-            onActiveTaskChange={setActiveTaskId}
-            tasks={tasks}
-            onTasksChange={setTasks}
-            timerRunning={timerRunning}
-            weatherCode={weatherCode}
-          />
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -116,7 +116,7 @@ export function PomodoroStats() {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="flex items-center gap-1.5 mx-auto rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
+        className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground mx-auto"
       >
         <BarChart3 size={12} /> Statistics
       </button>

@@ -482,7 +482,7 @@ export function TaskList({
 
       {/* Task list */}
       {filtered.length > 0 && (
-        <div className="space-y-1 max-h-64 overflow-y-auto">
+        <div className="space-y-1 max-h-[60vh] overflow-y-auto pr-1">
           {filtered.map(task => {
             const isDone = task.status === "done";
             const isActive = task.id === activeTaskId;
