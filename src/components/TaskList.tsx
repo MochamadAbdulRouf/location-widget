@@ -350,7 +350,7 @@ export function TaskList({
       </p>
 
       {/* Filter tabs */}
-      <div className="flex items-center justify-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1">
+      <div className="flex items-center justify-center gap-1 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 p-1">
         {filters.map(f => (
           <button
             key={f.key}
@@ -373,13 +373,13 @@ export function TaskList({
       {!showAddRow ? (
         <button
           onClick={() => setShowAddRow(true)}
-          className="flex items-center gap-1.5 mx-auto rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
+          className="flex items-center gap-1.5 mx-auto rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
         >
           <Plus size={12} /> Add Task
           <span className="text-[10px] text-muted-foreground/50 ml-1">(N)</span>
         </button>
       ) : (
-        <div className="rounded-xl border border-border/60 bg-secondary/20 p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="rounded-xl border border-border bg-secondary/40 dark:bg-secondary/20 p-3 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex items-center gap-2">
             <input
               ref={inputRef}
@@ -391,7 +391,7 @@ export function TaskList({
                 if (e.key === "Escape") setShowAddRow(false);
               }}
               placeholder="Type task name..."
-              className="flex-1 rounded-lg border border-border/60 bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="flex-1 rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             {/* Priority toggle */}
             <button
@@ -399,7 +399,7 @@ export function TaskList({
                 const idx = PRIORITY_CYCLE.indexOf(newPriority);
                 setNewPriority(PRIORITY_CYCLE[(idx + 1) % 3]);
               }}
-              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border/60 bg-secondary/50 transition-colors hover:bg-secondary/80"
+              className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-secondary/70 dark:bg-secondary/50 transition-colors hover:bg-secondary"
               title={`Priority: ${newPriority}`}
             >
               <div className={`h-2.5 w-2.5 rounded-full ${PRIORITY_DOT[newPriority]}`} />
@@ -413,7 +413,7 @@ export function TaskList({
                 max={10}
                 value={newEstimate}
                 onChange={e => setNewEstimate(Math.max(1, Math.min(10, Number(e.target.value))))}
-                className="w-10 rounded border border-border/60 bg-background px-1.5 py-1 text-center text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-10 rounded border border-border bg-background px-1.5 py-1 text-center text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
               />
             </div>
           </div>
@@ -421,7 +421,7 @@ export function TaskList({
           {/* Subtasks input */}
           <div className="space-y-1.5 py-1">
             {newSubtasks.map((st, i) => (
-              <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground bg-background/40 px-2 py-0.5 rounded border border-border/20">
+              <div key={i} className="flex items-center gap-2 text-[11px] text-muted-foreground bg-background/60 dark:bg-background/40 px-2 py-0.5 rounded border border-border/40">
                 <span className="flex-1 truncate">• {st}</span>
                 <button onClick={() => removeNewSubtask(i)} className="hover:text-destructive">
                   <X size={10} />
@@ -458,7 +458,7 @@ export function TaskList({
                   type="date"
                   value={newDueDate}
                   onChange={e => setNewDueDate(e.target.value)}
-                  className="rounded border border-border/60 bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="rounded border border-border bg-background px-2 py-0.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
             </div>
@@ -471,7 +471,7 @@ export function TaskList({
               </button>
               <button
                 onClick={addTask}
-                className="rounded-full border border-border/60 bg-foreground text-background px-4 py-1 text-xs font-medium transition-all hover:opacity-90"
+                className="rounded-full border border-border bg-foreground text-background px-4 py-1 text-xs font-medium transition-all hover:opacity-90"
               >
                 {isEditingExisting ? "Save" : "Add"}
               </button>
@@ -562,7 +562,7 @@ export function TaskList({
                     {!isDone && !isActive && (
                       <button
                         onClick={() => setFocusTask(task.id)}
-                        className="ml-auto flex items-center gap-1 rounded-full border border-border/60 bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-all hover:bg-secondary/80 hover:text-foreground"
+                        className="ml-auto flex items-center gap-1 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-muted-foreground transition-all hover:bg-secondary hover:text-foreground"
                       >
                         <Play size={8} /> Focus
                       </button>
@@ -634,7 +634,7 @@ export function TaskList({
 
       {tasks.length === 0 && (
         <p className="text-center text-xs text-muted-foreground py-4">
-          No tasks yet. Press <kbd className="rounded border border-border/60 bg-secondary/50 px-1.5 py-0.5 text-[10px] font-mono">N</kbd> to add one.
+          No tasks yet. Press <kbd className="rounded border border-border bg-secondary/70 dark:bg-secondary/50 px-1.5 py-0.5 text-[10px] font-mono">N</kbd> to add one.
         </p>
       )}
     </div>

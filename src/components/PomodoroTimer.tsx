@@ -299,7 +299,7 @@ export function PomodoroTimer({
     <div className="flex flex-col items-center gap-5 w-full max-w-sm">
       {/* Mode tabs + settings */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-1">
+        <div className="flex items-center gap-1 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 p-1">
           {(Object.keys(MODE_META) as PomodoroMode[]).map((m) => (
             <button
               key={m}
@@ -327,7 +327,7 @@ export function PomodoroTimer({
             setDraftAutoStart(autoStart);
             setShowSettings((s) => !s);
           }}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-border/60 bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
         >
           <Settings size={14} />
         </button>
@@ -335,7 +335,7 @@ export function PomodoroTimer({
 
       {/* Settings panel */}
       {showSettings && (
-        <div className="w-full rounded-xl border border-border/60 bg-secondary/20 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="w-full rounded-xl border border-border bg-secondary/40 dark:bg-secondary/20 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
           <p className="text-xs font-medium text-foreground text-center">Timer Settings (minutes)</p>
           <div className="grid grid-cols-3 gap-3">
             {[
@@ -351,7 +351,7 @@ export function PomodoroTimer({
                   max={120}
                   value={draftDurations[key]}
                   onChange={(e) => setDraftDurations((d) => ({ ...d, [key]: Math.max(1, Math.min(120, Number(e.target.value))) }))}
-                  className="w-16 rounded-lg border border-border/60 bg-background px-2 py-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                  className="w-16 rounded-lg border border-border bg-background px-2 py-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                 />
               </div>
             ))}
@@ -364,7 +364,7 @@ export function PomodoroTimer({
               max={10}
               value={draftLongBreakInterval}
               onChange={(e) => setDraftLongBreakInterval(Math.max(2, Math.min(10, Number(e.target.value))))}
-              className="w-16 rounded-lg border border-border/60 bg-background px-2 py-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-16 rounded-lg border border-border bg-background px-2 py-1.5 text-center text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
           <div className="flex items-center justify-between gap-2 px-2 py-1">
@@ -401,7 +401,7 @@ export function PomodoroTimer({
 
       {/* Active task label below timer */}
       {activeTaskName && (
-        <div className="flex items-center gap-2 rounded-full border border-border/60 bg-secondary/30 px-4 py-1.5 text-xs text-foreground animate-in fade-in duration-200">
+        <div className="flex items-center gap-2 rounded-full border border-border bg-secondary/50 dark:bg-secondary/30 px-4 py-1.5 text-xs text-foreground animate-in fade-in duration-200">
           <span className="text-muted-foreground">▶ Focusing on:</span>
           <span className="font-medium truncate max-w-[160px]">"{activeTaskName}"</span>
           <button
@@ -417,13 +417,13 @@ export function PomodoroTimer({
       <div className="flex items-center gap-3">
         <button
           onClick={toggleRunning}
-          className="rounded-full border border-border/60 bg-secondary/50 px-6 py-2 text-sm font-medium text-foreground transition-all duration-300 hover:bg-secondary/80 hover:border-foreground/20"
+          className="rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 px-6 py-2 text-sm font-medium text-foreground transition-all duration-300 hover:bg-secondary hover:border-foreground/20"
         >
           {!running && timeLeft === totalDuration ? "Start" : running ? "Pause" : "Resume"}
         </button>
         <button
           onClick={reset}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border/60 bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
         >
           <RotateCcw size={14} />
         </button>

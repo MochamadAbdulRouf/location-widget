@@ -81,7 +81,7 @@ function BackgroundUploader({
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
       <button
         onClick={() => fileRef.current?.click()}
-        className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
+        className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
       >
         <ImagePlus size={12} />
         {bgImage ? "Change BG" : "Set BG"}
@@ -89,7 +89,7 @@ function BackgroundUploader({
       {bgImage && (
         <button
           onClick={onRemove}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-border/60 bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground"
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground"
         >
           <X size={12} />
         </button>
