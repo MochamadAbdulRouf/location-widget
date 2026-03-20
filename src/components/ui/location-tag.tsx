@@ -172,7 +172,7 @@ export function LocationTag({ city, country, timezone, onLocationChange }: Locat
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={handleClick}
-        className="group relative flex items-center gap-3 rounded-full border border-border/60 bg-secondary/50 px-4 py-2.5 transition-all duration-500 ease-out hover:border-foreground/20 hover:bg-secondary/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.04)]"
+        className="group relative flex items-center gap-3 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 px-4 py-2.5 transition-all duration-500 ease-out hover:border-foreground/20 hover:bg-secondary hover:shadow-[0_0_20px_rgba(0,0,0,0.04)]"
       >
         {/* Live pulse indicator */}
         <div className="relative flex items-center justify-center">
@@ -238,7 +238,7 @@ export function LocationTag({ city, country, timezone, onLocationChange }: Locat
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border/60 bg-popover p-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full left-1/2 z-50 mt-2 w-72 -translate-x-1/2 rounded-xl border border-border bg-popover p-1.5 shadow-lg animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Search input */}
           <div className="px-2 pb-1.5">
             <input
@@ -247,7 +247,7 @@ export function LocationTag({ city, country, timezone, onLocationChange }: Locat
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
-              className="w-full rounded-lg border border-border/60 bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full rounded-lg border border-border bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
           <div className="max-h-52 overflow-y-auto">

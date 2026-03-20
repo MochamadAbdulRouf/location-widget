@@ -116,7 +116,7 @@ export function PomodoroStats() {
     return (
       <button
         onClick={() => setExpanded(true)}
-        className="flex items-center gap-1.5 rounded-full border border-border/60 bg-secondary/50 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary/80 hover:text-foreground mx-auto"
+        className="flex items-center gap-1.5 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 px-4 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-300 hover:bg-secondary hover:text-foreground mx-auto"
       >
         <BarChart3 size={12} /> Statistics
       </button>
@@ -124,13 +124,13 @@ export function PomodoroStats() {
   }
 
   return (
-    <div className="w-full rounded-xl border border-border/60 bg-secondary/20 p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+    <div className="w-full rounded-xl border border-border bg-secondary/40 dark:bg-secondary/20 p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-foreground flex items-center gap-1.5">
           <BarChart3 size={13} /> Focus Statistics
         </p>
-        <div className="flex items-center gap-1 rounded-full border border-border/60 bg-secondary/50 p-0.5">
+        <div className="flex items-center gap-1 rounded-full border border-border bg-secondary/70 dark:bg-secondary/50 p-0.5">
           {(["today", "week"] as ViewMode[]).map((v) => (
             <button
               key={v}
@@ -149,19 +149,19 @@ export function PomodoroStats() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="flex flex-col items-center gap-1 rounded-lg border border-border/40 bg-background/50 p-2.5">
+        <div className="flex flex-col items-center gap-1 rounded-lg border border-border/60 bg-background p-2.5">
           <Target size={14} className="text-muted-foreground" />
           <span className="text-lg font-bold text-foreground">{totalSessions}</span>
           <span className="text-[10px] text-muted-foreground">Sessions</span>
         </div>
-        <div className="flex flex-col items-center gap-1 rounded-lg border border-border/40 bg-background/50 p-2.5">
+        <div className="flex flex-col items-center gap-1 rounded-lg border border-border/60 bg-background p-2.5">
           <Clock size={14} className="text-muted-foreground" />
           <span className="text-lg font-bold text-foreground">
             {totalHours > 0 ? `${totalHours}h${remainingMins}m` : `${remainingMins}m`}
           </span>
           <span className="text-[10px] text-muted-foreground">Focus Time</span>
         </div>
-        <div className="flex flex-col items-center gap-1 rounded-lg border border-border/40 bg-background/50 p-2.5">
+        <div className="flex flex-col items-center gap-1 rounded-lg border border-border/60 bg-background p-2.5">
           <Flame size={14} className="text-muted-foreground" />
           <span className="text-lg font-bold text-foreground">{streak}</span>
           <span className="text-[10px] text-muted-foreground">Day Streak</span>
@@ -210,7 +210,7 @@ export function PomodoroStats() {
               return (
                 <div
                   key={i}
-                  className="flex items-center gap-1 rounded-full border border-border/40 bg-background/50 px-2 py-0.5 text-[10px] text-muted-foreground"
+                  className="flex items-center gap-1 rounded-full border border-border/60 bg-background px-2 py-0.5 text-[10px] text-muted-foreground"
                 >
                   <span className="font-medium text-foreground">
                     {t.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })}
